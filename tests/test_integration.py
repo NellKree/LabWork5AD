@@ -1,3 +1,4 @@
+# tests/test_integration.py
 import requests
 import unittest
 
@@ -19,6 +20,8 @@ class TestServices(unittest.TestCase):
         response = requests.get("http://localhost:5002/visualize")
         self.assertEqual(response.status_code, 200)
         self.assertIn("visualization", response.json())
+        self.assertIn("ingestion_data", response.json())
+        self.assertIn("detection_result", response.json())
 
 if __name__ == "__main__":
     unittest.main()

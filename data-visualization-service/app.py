@@ -13,6 +13,8 @@ def visualize_data():
 
         ingestion_response = requests.get(DATA_INGESTION_URL)
         ingestion_data = ingestion_response.json()
+
+
         detection_response = requests.post(
             BOT_DETECTION_URL,
             json={"data": ingestion_data["data"]},
@@ -23,7 +25,8 @@ def visualize_data():
         visualization_data = {
             "status": "success",
             "ingestion_data": ingestion_data["data"],
-            "detection_result": detection_result["status"]
+            "detection_result": detection_result["status"],
+            "visualization": f"Visualization of '{ingestion_data['data']}' with result: {detection_result['status']}"
         }
         return jsonify(visualization_data)
     except Exception as e:

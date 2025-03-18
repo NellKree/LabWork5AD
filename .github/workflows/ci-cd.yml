@@ -32,14 +32,14 @@ jobs:
         run: |
           docker build -t labwork5ad-data-ingestion:latest ./data-ingestion-service
           docker build -t labwork5ad-bot-detection:latest ./bot-detection-service
-          docker build -t labwork5ad-data-visualization:latest ./data-visualization-service  # Новый сервис
+          docker build -t labwork5ad-data-visualization:latest ./data-visualization-service
 
       # Шаг 5: Проверка существования образов
       - name: Check if Docker images exist
         run: |
           docker images labwork5ad-data-ingestion:latest
           docker images labwork5ad-bot-detection:latest
-          docker images labwork5ad-data-visualization:latest  # Проверка нового сервиса
+          docker images labwork5ad-data-visualization:latest
 
       # Шаг 6: Запуск сервисов через Docker Compose
       - name: Start services with Docker Compose
@@ -58,7 +58,7 @@ jobs:
           echo "Checking if services are up..."
           DATA_INGESTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:5000/data)
           BOT_DETECTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"data": "test"}' http://localhost:5001/detect)
-          DATA_VISUALIZATION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:5002/visualize)  # Проверка нового сервиса
+          DATA_VISUALIZATION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:5002/visualize)
 
           if [ "$DATA_INGESTION_STATUS" -ne 200 ]; then
             echo "data-ingestion-service returned status code $DATA_INGESTION_STATUS"
@@ -81,6 +81,7 @@ jobs:
         run: |
           docker-compose logs data-ingestion
           docker-compose logs bot-detection
+          docker-compose logs data-visualization
 
       # Шаг 10: Запуск интеграционных тестов
       - name: Run integration tests
