@@ -21,36 +21,36 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-# Шаг 3: Установка Docker Compose
+      # Шаг 3: Установка Docker Compose
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      # Шаг 3: Сборка Docker-образов
+      # Шаг 4: Сборка Docker-образов
       - name: Build Docker images
         run: |
           docker build -t labwork5ad-data-ingestion ./data-ingestion-service
           docker build -t labwork5ad-bot-detection ./bot-detection-service
 
-      # Шаг 4: Проверка существования образов
+      # Шаг 5: Проверка существования образов
       - name: Check if Docker images exist
         run: |
           docker images labwork5ad-data-ingestion
           docker images labwork5ad-bot-detection
 
-      # Шаг 5: Запуск сервисов через Docker Compose
+      # Шаг 6: Запуск сервисов через Docker Compose
       - name: Start services with Docker Compose
         run: |
           docker-compose up -d --build
 
-      # Шаг 6: Ждем, пока сервисы запустятся
+      # Шаг 7: Ждем, пока сервисы запустятся
       - name: Wait for services to start
         run: |
           echo "Waiting for services to start..."
-          sleep 5
+          sleep 30
 
-      # Шаг 7: Проверка состояния сервисов
+      # Шаг 8: Проверка состояния сервисов
       - name: Check service status
         run: |
           echo "Checking if services are up..."
@@ -67,23 +67,23 @@ jobs:
             exit 1
           fi
 
-      # Шаг 8: Вывод логов в случае ошибки
+      # Шаг 9: Вывод логов в случае ошибки
       - name: Debug service logs
         if: failure()
         run: |
           docker-compose logs data-ingestion
           docker-compose logs bot-detection
 
-      # Шаг 9: Запуск интеграционных тестов
+      # Шаг 10: Запуск интеграционных тестов
       - name: Run integration tests
         run: |
           python -m unittest discover tests
 
-      # Шаг 10: Остановка контейнеров после тестов
+      # Шаг 11: Остановка контейнеров после тестов
       - name: Stop services with Docker Compose
         if: always()
         run: |
-          docker-compose down
+          docker-compose down --rmi none
 
   deploy:
     needs: build-and-test
