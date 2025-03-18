@@ -36,14 +36,14 @@ jobs:
       - name: Wait for services to start
         run: |
           echo "Waiting for services to start..."
-          sleep 30  # Увеличено время ожидания
+          sleep 20
 
       # Шаг 6: Проверка состояния сервисов
       - name: Check service status
         run: |
           echo "Checking if services are up..."
           DATA_INGESTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:5000/data)
-          BOT_DETECTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -X POST -d '{"data": "test"}' http://localhost:5001/detect)
+          BOT_DETECTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"data": "test"}' http://localhost:5001/detect)
 
           if [ "$DATA_INGESTION_STATUS" -ne 200 ]; then
             echo "data-ingestion-service returned status code $DATA_INGESTION_STATUS"
