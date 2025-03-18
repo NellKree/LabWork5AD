@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   data-ingestion:
     build:
@@ -12,8 +14,14 @@ services:
       context: ./bot-detection-service
     ports:
       - "5001:5001"
-    depends_on:
-      - data-ingestion
+    networks:
+      - bot-network
+
+  data-visualization:
+    build:
+      context: ./data-visualization-service
+    ports:
+      - "5002:5002"
     networks:
       - bot-network
 

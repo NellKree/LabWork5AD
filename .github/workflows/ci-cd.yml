@@ -32,12 +32,14 @@ jobs:
         run: |
           docker build -t labwork5ad-data-ingestion:latest ./data-ingestion-service
           docker build -t labwork5ad-bot-detection:latest ./bot-detection-service
+          docker build -t labwork5ad-data-visualization:latest ./data-visualization-service  # Новый сервис
 
       # Шаг 5: Проверка существования образов
       - name: Check if Docker images exist
         run: |
           docker images labwork5ad-data-ingestion:latest
           docker images labwork5ad-bot-detection:latest
+          docker images labwork5ad-data-visualization:latest  # Проверка нового сервиса
 
       # Шаг 6: Запуск сервисов через Docker Compose
       - name: Start services with Docker Compose
@@ -48,7 +50,7 @@ jobs:
       - name: Wait for services to start
         run: |
           echo "Waiting for services to start..."
-          sleep 30
+          sleep 5
 
       # Шаг 8: Проверка состояния сервисов
       - name: Check service status
@@ -56,6 +58,7 @@ jobs:
           echo "Checking if services are up..."
           DATA_INGESTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:5000/data)
           BOT_DETECTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"data": "test"}' http://localhost:5001/detect)
+          DATA_VISUALIZATION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:5002/visualize)  # Проверка нового сервиса
 
           if [ "$DATA_INGESTION_STATUS" -ne 200 ]; then
             echo "data-ingestion-service returned status code $DATA_INGESTION_STATUS"
@@ -64,6 +67,11 @@ jobs:
 
           if [ "$BOT_DETECTION_STATUS" -ne 200 ]; then
             echo "bot-detection-service returned status code $BOT_DETECTION_STATUS"
+            exit 1
+          fi
+
+          if [ "$DATA_VISUALIZATION_STATUS" -ne 200 ]; then
+            echo "data-visualization-service returned status code $DATA_VISUALIZATION_STATUS"
             exit 1
           fi
 
@@ -94,6 +102,8 @@ jobs:
         run: |
           docker tag labwork5ad-data-ingestion:latest ${{ secrets.DOCKERHUB_USERNAME }}/data-ingestion-service:latest
           docker tag labwork5ad-bot-detection:latest ${{ secrets.DOCKERHUB_USERNAME }}/bot-detection-service:latest
+          docker tag labwork5ad-data-visualization:latest ${{ secrets.DOCKERHUB_USERNAME }}/data-visualization-service:latest  
 
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/data-ingestion-service:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/bot-detection-service:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/data-visualization-service:latest
