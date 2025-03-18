@@ -26,8 +26,9 @@
   - Сбор данных.
   - Передача данных в `bot-detection-service` для анализа.
 - **Пример использования**:
-  ```bash
+  ```
   curl http://localhost:5000/data
+  ```
 
   ### 2. `bot-detection-service`
 - **Описание**: Анализирует данные на наличие бот-активности и возвращает результат (detected или clean).
@@ -36,8 +37,9 @@
   - Принимает данные через POST-запрос на эндпоинт /detect.
   - Возвращает результат анализа.
 - **Пример использования**:
-  ```bash
+  ```
   curl -X POST -H "Content-Type: application/json" -d '{"data": "test"}' http://localhost:5001/detect
+  ```
 
   ### 3. `bot-detection-service`
 - **Описание**: Предоставляет визуализацию данных, полученных из data-ingestion-service, и результатов анализа от bot-detection-service.
