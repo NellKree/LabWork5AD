@@ -3,15 +3,24 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
-  # Job для сборки и тестирования
   build-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      data-ingestion:
+        image: data-ingestion-service
+        ports:
+          - 5000:5000
+      bot-detection:
+        image: bot-detection-service
+        ports:
+          - 5001:5001
 
     steps:
       # Шаг 1: Клонирование репозитория
@@ -28,12 +37,30 @@ jobs:
           docker build -t data-ingestion-service ./data-ingestion-service
           docker build -t bot-detection-service ./bot-detection-service
 
-      # Шаг 4: Запуск интеграционных тестов
+      # Шаг 4: Запуск сервисов (используем Docker Run)
+      - name: Start services
+        run: |
+          docker run -d --name data-ingestion -p 5000:5000 data-ingestion-service
+          docker run -d --name bot-detection -p 5001:5001 bot-detection-service
+
+      # Шаг 5: Ждем, пока сервисы запустятся
+      - name: Wait for services to start
+        run: |
+          echo "Waiting for services to start..."
+          sleep 10
+
+      # Шаг 6: Запуск интеграционных тестов
       - name: Run integration tests
         run: |
           python -m unittest discover tests
 
-  # Job для публикации в Docker Hub
+      # Шаг 7: Остановка контейнеров после тестов
+      - name: Stop services
+        if: always()
+        run: |
+          docker stop data-ingestion bot-detection || true
+          docker rm data-ingestion bot-detection || true
+
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
