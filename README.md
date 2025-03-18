@@ -28,7 +28,7 @@
 - **Пример использования**:
   ```bash
   curl http://localhost:5000/data
-
+```
   ### 2. `bot-detection-service`
 - **Описание**: Анализирует данные на наличие бот-активности и возвращает результат (detected или clean).
 - **Порт**: `5001`
@@ -38,7 +38,7 @@
 - **Пример использования**:
   ```bash
   curl -X POST -H "Content-Type: application/json" -d '{"data": "test"}' http://localhost:5001/detect
-
+```
   ### 3. `bot-detection-service`
 - **Описание**: Предоставляет визуализацию данных, полученных из data-ingestion-service, и результатов анализа от bot-detection-service.
 - **Порт**: `5002`
@@ -48,7 +48,7 @@
   - Возвращает визуализацию данных и результатов анализа.
 - **Пример использования**:
   ```bash
- curl http://localhost:5002/visualize
+ curl http://localhost:5002/visualize```
  ## Тестирование
  Проект содержит интеграционные тесты для проверки работоспособности всех трех сервисов. Тесты написаны с использованием Python unittest.
  
