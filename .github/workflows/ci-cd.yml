@@ -1,0 +1,53 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # Job для сборки и тестирования
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Шаг 1: Клонирование репозитория
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Шаг 2: Установка Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Шаг 3: Сборка Docker-образов
+      - name: Build Docker images
+        run: |
+          docker build -t data-ingestion-service ./data-ingestion-service
+          docker build -t bot-detection-service ./bot-detection-service
+
+      # Шаг 4: Запуск интеграционных тестов
+      - name: Run integration tests
+        run: |
+          python -m unittest discover tests
+
+  # Job для публикации в Docker Hub
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Шаг 1: Вход в Docker Hub
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      # Шаг 2: Публикация Docker-образов
+      - name: Push Docker images to Docker Hub
+        run: |
+          docker tag data-ingestion-service ${{ secrets.DOCKERHUB_USERNAME }}/data-ingestion-service:latest
+          docker tag bot-detection-service ${{ secrets.DOCKERHUB_USERNAME }}/bot-detection-service:latest
+
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/data-ingestion-service:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/bot-detection-service:latest
