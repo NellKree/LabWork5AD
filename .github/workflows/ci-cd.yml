@@ -12,16 +12,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      data-ingestion:
-        image: data-ingestion-service
-        ports:
-          - 5000:5000
-      bot-detection:
-        image: bot-detection-service
-        ports:
-          - 5001:5001
-
     steps:
       # Шаг 1: Клонирование репозитория
       - name: Checkout code
