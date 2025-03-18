@@ -1,6 +1,6 @@
 def detect_bots(data):
     print(f"Analyzing data: {data}")
-    # Здесь можно добавить алгоритм детекции ботов
+    # Здесь можно добавить алгоритм
     if "bot" in data.lower():
         return {"status": "detected", "reason": "Bot-like activity"}
     return {"status": "clean"}
