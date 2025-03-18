@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build-and-test:
@@ -21,35 +21,53 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      # Шаг 3: Установка Docker Compose
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      # Шаг 3: Запуск сервисов через Docker Compose
+      # Шаг 4: Запуск сервисов через Docker Compose
       - name: Start services with Docker Compose
         run: |
           docker-compose up -d --build
 
-      # Шаг 4: Ждем, пока сервисы запустятся
+      # Шаг 5: Ждем, пока сервисы запустятся
       - name: Wait for services to start
         run: |
           echo "Waiting for services to start..."
-          sleep 20
+          sleep 30  # Увеличено время ожидания
 
-      # Шаг 5: Проверка состояния сервисов
+      # Шаг 6: Проверка состояния сервисов
       - name: Check service status
         run: |
           echo "Checking if services are up..."
-          curl --fail -s http://localhost:5000/data > /dev/null || (echo "data-ingestion-service is not responding" && exit 1)
-          curl --fail -s http://localhost:5001/detect -X POST -d '{"data": "test"}' > /dev/null || (echo "bot-detection-service is not responding" && exit 1)
+          DATA_INGESTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:5000/data)
+          BOT_DETECTION_STATUS=$(curl -o /dev/null -s -w "%{http_code}" -X POST -d '{"data": "test"}' http://localhost:5001/detect)
 
-      # Шаг 6: Запуск интеграционных тестов
+          if [ "$DATA_INGESTION_STATUS" -ne 200 ]; then
+            echo "data-ingestion-service returned status code $DATA_INGESTION_STATUS"
+            exit 1
+          fi
+
+          if [ "$BOT_DETECTION_STATUS" -ne 200 ]; then
+            echo "bot-detection-service returned status code $BOT_DETECTION_STATUS"
+            exit 1
+          fi
+
+      # Шаг 7: Вывод логов в случае ошибки
+      - name: Debug service logs
+        if: failure()
+        run: |
+          docker-compose logs data-ingestion
+          docker-compose logs bot-detection
+
+      # Шаг 8: Запуск интеграционных тестов
       - name: Run integration tests
         run: |
           python -m unittest discover tests
 
-      # Шаг 7: Остановка контейнеров после тестов
+      # Шаг 9: Остановка контейнеров после тестов
       - name: Stop services with Docker Compose
         if: always()
         run: |
