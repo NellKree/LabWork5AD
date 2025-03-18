@@ -30,19 +30,19 @@ jobs:
       # Шаг 4: Сборка Docker-образов
       - name: Build Docker images
         run: |
-          docker build -t labwork5ad-data-ingestion ./data-ingestion-service
-          docker build -t labwork5ad-bot-detection ./bot-detection-service
+          docker build -t labwork5ad-data-ingestion:latest ./data-ingestion-service
+          docker build -t labwork5ad-bot-detection:latest ./bot-detection-service
 
       # Шаг 5: Проверка существования образов
       - name: Check if Docker images exist
         run: |
-          docker images labwork5ad-data-ingestion
-          docker images labwork5ad-bot-detection
+          docker images labwork5ad-data-ingestion:latest
+          docker images labwork5ad-bot-detection:latest
 
       # Шаг 6: Запуск сервисов через Docker Compose
       - name: Start services with Docker Compose
         run: |
-          docker-compose up -d --build
+          docker-compose up -d
 
       # Шаг 7: Ждем, пока сервисы запустятся
       - name: Wait for services to start
@@ -94,11 +94,26 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
+      # Шаг 2: Проверка существования образов перед тегированием
+      - name: Check if Docker images exist before tagging
+        run: |
+          docker images labwork5ad-data-ingestion:latest
+          docker images labwork5ad-bot-detection:latest
+
       # Шаг 2: Тегирование и публикация Docker-образов
       - name: Push Docker images to Docker Hub
         run: |
-          docker tag labwork5ad-data-ingestion ${{ secrets.DOCKERHUB_USERNAME }}/data-ingestion-service:latest
-          docker tag labwork5ad-bot-detection ${{ secrets.DOCKERHUB_USERNAME }}/bot-detection-service:latest
+          docker tag labwork5ad-data-ingestion:latest ${{ secrets.DOCKERHUB_USERNAME }}/data-ingestion-service:latest
+          docker tag labwork5ad-bot-detection:latest ${{ secrets.DOCKERHUB_USERNAME }}/bot-detection-service:latest
 
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/data-ingestion-service:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/bot-detection-service:latest
+      # Шаг 4: Логирование успешного развертывания
+      - name: Log successful deployment
+        run: |
+          echo "Docker images have been successfully pushed to Docker Hub."
+
+      # Шаг 5: Сохранение информации о версии
+      - name: Save image version
+        run: |
+          echo "IMAGE_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
