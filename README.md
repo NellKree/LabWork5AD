@@ -27,8 +27,8 @@
   - Передача данных в `bot-detection-service` для анализа.
 - **Пример использования**:
   ```bash
-  curl http://localhost:5000/data
-```
+  curl http://localhost:5000/data```
+
   ### 2. `bot-detection-service`
 - **Описание**: Анализирует данные на наличие бот-активности и возвращает результат (detected или clean).
 - **Порт**: `5001`
