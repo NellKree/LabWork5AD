@@ -1,11 +1,13 @@
-def detect_bots(data):
-    print(f"Analyzing data: {data}")
-    # Здесь можно
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/detect', methods=['POST'])
+def detect_bots():
+    data = request.json.get("data", "")
     if "bot" in data.lower():
-        return {"status": "detected", "reason": "Bot-like activity"}
-    return {"status": "clean"}
+        return jsonify({"status": "detected", "reason": "Bot-like activity"})
+    return jsonify({"status": "clean"})
 
 if __name__ == "__main__":
-    sample_data = "This is a bot activity"
-    result = detect_bots(sample_data)
-    print(result)
+    app.run(host='0.0.0.0', port=5001)  # Слушаем все интерфейсы на порту 5001

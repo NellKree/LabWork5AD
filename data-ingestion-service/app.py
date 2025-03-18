@@ -1,13 +1,10 @@
-import time
-from datetime import datetime
+from flask import Flask, jsonify
 
+app = Flask(__name__)
+
+@app.route('/data', methods=['GET'])
 def fetch_data():
-    print(f"[{datetime.now()}] Fetching data from social network...")
-    # Здесь можно добавить реальную логику для сбора данных
-    return {"status": "success", "data": "sample_data"}
+    return jsonify({"status": "success", "data": "sample_data"})
 
 if __name__ == "__main__":
-    while True:
-        result = fetch_data()
-        print(result)
-        time.sleep(5)  # Имитация периодического сбора данных
+    app.run(host='0.0.0.0', port=5000)  # Слушаем все интерфейсы на порту 5000

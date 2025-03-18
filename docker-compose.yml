@@ -2,13 +2,22 @@ version: '3.8'
 
 services:
   data-ingestion:
-    build: ./data-ingestion-service
-    container_name: data-ingestion-service
+    build:
+      context: ./data-ingestion-service
     ports:
       - "5000:5000"
+    networks:
+      - bot-network
 
   bot-detection:
-    build: ./bot-detection-service
-    container_name: bot-detection-service
+    build:
+      context: ./bot-detection-service
+    ports:
+      - "5001:5001"
     depends_on:
       - data-ingestion
+    networks:
+      - bot-network
+
+networks:
+  bot-network:

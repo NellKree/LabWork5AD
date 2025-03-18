@@ -21,23 +21,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Шаг 3: Сборка Docker-образов
-      - name: Build Docker images
+      # Шаг 3: Запуск сервисов через Docker Compose
+      - name: Start services with Docker Compose
         run: |
-          docker build -t data-ingestion-service ./data-ingestion-service
-          docker build -t bot-detection-service ./bot-detection-service
+          docker-compose up -d --build
 
-      # Шаг 4: Запуск сервисов (используем Docker Run)
-      - name: Start services
-        run: |
-          docker run -d --name data-ingestion -p 5000:5000 data-ingestion-service
-          docker run -d --name bot-detection -p 5001:5001 bot-detection-service
-
-      # Шаг 5: Ждем, пока сервисы запустятся
+      # Шаг 4: Ждем, пока сервисы запустятся
       - name: Wait for services to start
         run: |
           echo "Waiting for services to start..."
-          sleep 10
+          sleep 20
+
+      # Шаг 5: Проверка состояния сервисов
+      - name: Check service status
+        run: |
+          echo "Checking if services are up..."
+          curl --fail -s http://localhost:5000/data > /dev/null || (echo "data-ingestion-service is not responding" && exit 1)
+          curl --fail -s http://localhost:5001/detect -X POST -d '{"data": "test"}' > /dev/null || (echo "bot-detection-service is not responding" && exit 1)
 
       # Шаг 6: Запуск интеграционных тестов
       - name: Run integration tests
@@ -45,11 +45,10 @@ jobs:
           python -m unittest discover tests
 
       # Шаг 7: Остановка контейнеров после тестов
-      - name: Stop services
+      - name: Stop services with Docker Compose
         if: always()
         run: |
-          docker stop data-ingestion bot-detection || true
-          docker rm data-ingestion bot-detection || true
+          docker-compose down
 
   deploy:
     needs: build-and-test
